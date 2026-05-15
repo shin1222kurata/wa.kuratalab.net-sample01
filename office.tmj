@@ -576,7 +576,7 @@
         {
          "name":"script",
          "type":"string",
-         "value":"src\/main.ts"
+         "value":".\/script.js"
         }],
  "renderorder":"right-down",
  "tiledversion":"1.12.0",
