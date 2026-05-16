@@ -10,11 +10,10 @@ WA.onInit().then(() => {
     });
 });
 
-// --- 以下を既存のコードの末尾に追記 ---
-
+// マップ側の script.js に追記するコード
 WA.player.proximityMeeting.onJoin().subscribe((user) => {
-    // 近づいてきた相手の名前が「案内係」だった場合、自分のチャット欄にメッセージを表示する
     if (user.name === '案内係') {
+        // 近づいてきたら、自分の画面左側のチャット欄にメッセージを追加する
         WA.chat.sendChatMessage('なにか私にできることはありますか？', '案内係');
     }
 });
