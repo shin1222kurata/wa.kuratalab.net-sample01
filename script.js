@@ -10,17 +10,14 @@ WA.onInit().then(() => {
     });
 });
 
-console.log("AI案内係のCo-WebSite連動スクリプトが起動しました。");
+// マップに読み込ませる script.js
 
-let isChatWindowOpen = false;
-
-// 表示させたいAIチャットアプリ（後述のHTML）のURLを指定します
-// ※実際にホスティングするURLに書き換えてください
-const AI_CHAT_URL = 'https://shin1222kurata.github.io/wa.kuratalab.net-sample01/ai-chat.html';
+let isChatOpen = false;
 
 setInterval(async () => {
     try {
         const players = await WA.room.getPlayers();
+        // Botを探す
         const bot = players.find(p => p.name === '案内係' || (p.state && p.state.isGuideBot));
 
         if (bot) {
@@ -28,29 +25,19 @@ setInterval(async () => {
             const distanceX = Math.abs(myPos.x - bot.x);
             const distanceY = Math.abs(myPos.y - bot.y);
             
-            // 3マス以内に接近した場合
+            // 3マス以内に入ったら、チャット画面（Co-WebSite）を強制的に開く！
             if (distanceX <= 3 && distanceY <= 3) {
-                if (!isChatWindowOpen) {
-                    isChatWindowOpen = true;
-                    console.log("案内係に接近。AIチャット画面を開きます。");
-                    
-                    // 画面右側にチャット用Webページをスライドイン表示させる
-                    WA.nav.openCoWebSite(AI_CHAT_URL);
+                if (!isChatOpen) {
+                    isChatOpen = true;
+                    // ※仮としてWikipediaを開きます。将来ここにAIチャットアプリのURLを入れます。
+                    WA.nav.openCoWebSite('https://ja.wikipedia.org/wiki/人工知能');
                 }
             } else {
-                // 3マスより離れた場合
-                if (isChatWindowOpen) {
-                    isChatWindowOpen = false;
-                    console.log("案内係から離れました。AIチャット画面を閉じます。");
-                    
-                    // チャット画面を閉じる
+                // 離れたら閉じる
+                if (isChatOpen) {
+                    isChatOpen = false;
                     WA.nav.closeCoWebSite();
                 }
-            }
-        } else {
-            if (isChatWindowOpen) {
-                isChatWindowOpen = false;
-                WA.nav.closeCoWebSite();
             }
         }
     } catch (e) {}
