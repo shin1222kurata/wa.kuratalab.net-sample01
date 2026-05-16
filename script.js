@@ -10,20 +10,17 @@ WA.onInit().then(() => {
     });
 });
 
-// スクリプトが読み込まれているか確認（ブラウザのF12開発者ツール(Console)で確認できます）
-console.log("マップスクリプトが正常に起動しました！");
-
 WA.player.proximityMeeting.onJoin().subscribe((user) => {
-    // 誰かが近づいた瞬間に、その人の名前を裏側（Console）に出力して確認する
+    // コンソールで接近したユーザーを確認（デバッグ用）
     console.log("アバターが接近しました。認識された名前:", user.name);
 
-    // 【対策1】完全一致ではなく「案内係」という文字が"含まれているか"で判定し、エラーを吸収する
-    if (user.name && user.name.includes('案内係')) {
+    // 【修正点】名前が「案内係」であるか、Bot専用のタグを持っている場合のみ発動
+    if (user.name === '案内係' || (user.state && user.state.isGuideBot)) {
         
         // 1. 画面左側のチャットログに残す
         WA.chat.sendChatMessage('なにか私にできることはありますか？', '案内係');
 
-        // 2. 【対策2】チャット欄を開いていなくても確実に気付くように、画面にポップアップを出す
+        // 2. 画面中央下にポップアップ通知を出す
         WA.ui.displayActionMessage({
             message: "案内係：なにか私にできることはありますか？",
             type: "message"
