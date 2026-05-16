@@ -10,18 +10,11 @@ WA.onInit().then(() => {
     });
 });
 
-// 人間側のブラウザで動くマップスクリプト (map-script.js)
+// --- 以下を既存のコードの末尾に追記 ---
+
 WA.player.proximityMeeting.onJoin().subscribe((user) => {
-    // 近づいてきた相手の名前が「案内係」だった場合
+    // 近づいてきた相手の名前が「案内係」だった場合、自分のチャット欄にメッセージを表示する
     if (user.name === '案内係') {
-        // 自分の画面のチャット欄に、案内係からのメッセージとしてローカル表示する
         WA.chat.sendChatMessage('なにか私にできることはありますか？', '案内係');
-        
-        // （おまけ）画面中央にポップアップ通知を出したい場合はこちら
-        // WA.ui.displayActionMessage({
-        //     message: "案内係が話しかけています！",
-        //     type: "message",
-        //     timeout: 5000
-        // });
     }
 });
