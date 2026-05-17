@@ -42,3 +42,24 @@ setInterval(async () => {
         }
     } catch (e) {}
 }, 1000);
+
+// 会話の輪（バブル）が繋がった瞬間に発火するイベント
+WA.player.proximityMeeting.onJoin().subscribe((users) => {
+    console.log("誰かと会話範囲に入りました", users);
+    
+    // 繋がった相手の中に「案内係」がいるかチェックする
+    const isBot = users.some(user => user.name === '案内係' || user.isGuideBot);
+
+    if (isBot) {
+        // 案内係だったらチャット画面を開く
+        WA.nav.openCoWebSite('https://shin1222kurata.github.io/wa.kuratalab.net-sample01/ai-chat.html');
+    }
+});
+
+// 会話の輪（バブル）から離れた瞬間に発火するイベント
+WA.player.proximityMeeting.onLeave().subscribe((users) => {
+    console.log("会話範囲から出ました");
+    
+    // チャット画面を閉じる
+    WA.nav.closeCoWebSite();
+});
