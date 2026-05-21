@@ -70,7 +70,7 @@
     </div>
 
     <script>
-        function sendMessage() {
+        async function sendMessage() {
             const inputField = document.getElementById('user-input');
             const message = inputField.value.trim();
             if (!message) return;
@@ -79,11 +79,39 @@
             appendMessage(message, 'user');
             inputField.value = '';
 
-            // 擬似的なAIのローディング処理
-            setTimeout(() => {
-                const reply = "ご質問ありがとうございます。現在、生成AI連携の準備中です。";
-                appendMessage(reply, 'bot');
-            }, 1000);
+            // ローディング表示（考え中...）を追加
+            const chatBox = document.getElementById('chat-box');
+            const loadingId = 'loading-' + Date.now();
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message bot';
+            loadingDiv.id = loadingId;
+            loadingDiv.innerHTML = `<div class="bubble">考え中...</div>`;
+            chatBox.appendChild(loadingDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                // 【重要】VPSのAPIサーバーのURLに書き換えてください（HTTPS必須）
+                const apiUrl = 'https://[あなたのVPSのドメインまたはURL]/api/chat';
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+
+                if (!response.ok) throw new Error('Network response was not ok');
+
+                const data = await response.json();
+
+                // ローディング表示を削除して、AIの回答を表示
+                document.getElementById(loadingId).remove();
+                appendMessage(data.reply, 'bot');
+                
+            } catch (error) {
+                console.error('通信エラー:', error);
+                document.getElementById(loadingId).remove();
+                appendMessage("サーバーとの通信に失敗しました。案内係は現在お休み中です。", 'bot');
+            }
         }
 
         function appendMessage(text, sender) {
