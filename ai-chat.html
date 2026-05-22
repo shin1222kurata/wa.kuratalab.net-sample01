@@ -68,24 +68,4 @@
                 appendMessage(data.reply, 'bot');
                 
             } catch (error) {
-                console.error('通信エラー:', error);
-                document.getElementById(loadingId).remove();
-                appendMessage("サーバーとの通信に失敗しました。案内係は現在お休み中です。", 'bot');
-            }
-        }
-
-        function appendMessage(text, sender) {
-            const chatBox = document.getElementById('chat-box');
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${sender}`;
-            msgDiv.innerHTML = `<div class="bubble">${text}</div>`;
-            chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        document.getElementById('user-input').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') sendMessage();
-        });
-    </script>
-</body>
-</html>
+                console.error('通信エラー:',
