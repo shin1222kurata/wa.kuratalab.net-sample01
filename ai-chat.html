@@ -5,55 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI案内係</title>
     <style>
-        body { 
-            font-family: sans-serif; 
-            background-color: #f4f4f9; 
-            margin: 0; 
-            padding: 10px; 
-            display: flex; 
-            flex-direction: column; 
-            height: 100vh; 
-            box-sizing: border-box; 
-        }
-
-        /* チャットエリア全体をFlexbox化し、縦方向に並べる */
-        #chat-box { 
-            flex-grow: 1; 
-            background: white; 
-            border-radius: 8px; 
-            padding: 15px; 
-            overflow-y: auto; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
-            margin-bottom: 10px;
-            display: flex;
-            flex-direction: column; /* メッセージを縦に並べる */
-            gap: 15px; /* メッセージ同士の間隔 */
-        }
-
-        /* 1行分のコンテナ（Flexboxにして左右の寄せをコントロール） */
-        .message { 
-            display: flex; 
-            width: 100%; 
-        }
-
-        /* Botは左寄せ、Userは右寄せ */
+        body { font-family: sans-serif; background-color: #f4f4f9; margin: 0; padding: 10px; display: flex; flex-direction: column; height: 100vh; box-sizing: border-box; }
+        #chat-box { flex-grow: 1; background: white; border-radius: 8px; padding: 15px; overflow-y: auto; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 10px; display: flex; flex-direction: column; gap: 15px; }
+        .message { display: flex; width: 100%; }
         .message.bot { justify-content: flex-start; }
         .message.user { justify-content: flex-end; }
-
-        /* 吹き出し自体のデザイン（共通） */
-        .bubble { 
-            padding: 10px; 
-            border-radius: 8px; 
-            max-width: 80%; 
-            line-height: 1.5; 
-            word-wrap: break-word; /* 長いURLなどを入力してもはみ出さないようにする */
-        }
-
-        /* BotとUserの吹き出しの色分け */
+        .bubble { padding: 10px; border-radius: 8px; max-width: 80%; line-height: 1.5; word-wrap: break-word; }
         .bot .bubble { color: #2c3e50; background: #e9ecef; }
         .user .bubble { color: white; background: #007bff; }
-
-        /* 入力エリア */
         .input-area { display: flex; gap: 5px; }
         input[type="text"] { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
         button { padding: 10px 15px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
@@ -62,7 +21,7 @@
 </head>
 <body>
     <div id="chat-box">
-        <div class="message bot"><div class="bubble">なにか私にできることはありますか？</div></div>
+        <div class="message bot"><div class="bubble">メタバース空間へようこそ。なにか私にできることはありますか？</div></div>
     </div>
     <div class="input-area">
         <input type="text" id="user-input" placeholder="メッセージを入力...">
@@ -75,23 +34,20 @@
             const message = inputField.value.trim();
             if (!message) return;
 
-            // ユーザーの発言を画面に追加
             appendMessage(message, 'user');
             inputField.value = '';
 
-            // ローディング表示（考え中...）を追加
             const chatBox = document.getElementById('chat-box');
             const loadingId = 'loading-' + Date.now();
             const loadingDiv = document.createElement('div');
             loadingDiv.className = 'message bot';
             loadingDiv.id = loadingId;
-            loadingDiv.innerHTML = `<div class="bubble">考え中...</div>`;
+            loadingDiv.innerHTML = '<div class="bubble">考え中...</div>';
             chatBox.appendChild(loadingDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
 
             try {
-                // 【重要】VPSのAPIサーバーのURLに書き換えてください（HTTPS必須）
-                const apiUrl = 'https://[あなたのVPSのドメインまたはURL]/api/chat';
+                const apiUrl = 'https://wa.kuratalab.net/api/chat';
                 
                 const response = await fetch(apiUrl, {
                     method: 'POST',
@@ -103,12 +59,11 @@
 
                 const data = await response.json();
 
-                // ローディング表示を削除して、AIの回答を表示
                 document.getElementById(loadingId).remove();
                 appendMessage(data.reply, 'bot');
                 
             } catch (error) {
-                console.error('通信エラー:', error);
+                console.error(error);
                 document.getElementById(loadingId).remove();
                 appendMessage("サーバーとの通信に失敗しました。案内係は現在お休み中です。", 'bot');
             }
@@ -117,20 +72,12 @@
         function appendMessage(text, sender) {
             const chatBox = document.getElementById('chat-box');
             const msgDiv = document.createElement('div');
-            
-            // 行のコンテナに 'bot' か 'user' のクラスを付与して左右を決定
-            msgDiv.className = `message ${sender}`;
-            
-            // その中に吹き出し（bubble）を生成
-            msgDiv.innerHTML = `<div class="bubble">${text}</div>`;
-            
+            msgDiv.className = 'message ' + sender;
+            msgDiv.innerHTML = '<div class="bubble">' + text + '</div>';
             chatBox.appendChild(msgDiv);
-            
-            // 自動で一番下までスクロール
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // Enterキーで送信できるようにする
         document.getElementById('user-input').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') sendMessage();
         });

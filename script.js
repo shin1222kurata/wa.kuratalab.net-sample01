@@ -1,45 +1,21 @@
-WA.onInit().then(() => {
-    WA.ui.displayActionMessage({
-        message: "メタバース空間へようこそ！ここには案内係がいます。",
-        type: "message",
-        callback: () => {
-            console.log("メッセージが閉じられました");
-        }
-    });
+let isChatOpen = false;
+// キャッシュ対策を含めたシンプルなURL
+const chatUrl = 'https://shin1222kurata.github.io/wa.kuratalab.net-sample01/ai-chat.html?v=3';
+
+console.log("=== 案内係スクリプト（シンプル・名前取得なし版） ===");
+
+WA.player.proximityMeeting.onJoin().subscribe((players) => {
+    const bot = players.find(p => p.name === '案内係');
+    if (bot && !isChatOpen) {
+        isChatOpen = true;
+        WA.nav.openCoWebSite(chatUrl);
+    }
 });
 
-let isChatOpen = false;
-// ご自身のGitHub PagesのURL
-const chatUrl = 'https://shin1222kurata.github.io/wa.kuratalab.net-sample01/ai-chat.html';
-
-// 方法1：距離判定（こちらの方が確実に特定の位置で発火します）
-setInterval(async () => {
-    try {
-        const players = await WA.room.getPlayers();
-        const bot = players.find(p => p.name === '案内係' || (p.state && p.state.isGuideBot));
-
-        if (bot) {
-            const myPos = await WA.player.getPosition();
-            const distanceX = Math.abs(myPos.x - bot.x);
-            const distanceY = Math.abs(myPos.y - bot.y);
-            
-            // 3マス以内に入ったらチャット画面を開く
-            if (distanceX <= 3 && distanceY <= 3) {
-                if (!isChatOpen) {
-                    isChatOpen = true;
-                    WA.nav.openCoWebSite(chatUrl);
-                }
-            } else {
-                // 離れたら閉じる
-                if (isChatOpen) {
-                    isChatOpen = false;
-                    WA.nav.closeCoWebSite();
-                }
-            }
-        }
-    } catch (e) {
-        console.error("プレイヤー情報の取得エラー", e);
+WA.player.proximityMeeting.onLeave().subscribe((players) => {
+    const botLeft = players.find(p => p.name === '案内係');
+    if (botLeft && isChatOpen) {
+        isChatOpen = false;
+        WA.nav.closeCoWebSite();
     }
-}, 1000);
-
-// ※ proximityMeetingのイベントは、距離判定(setInterval)と重複するため削除またはコメントアウト推奨
+});
