@@ -1,9 +1,7 @@
-let currentCoWebsite = null;
 let isChatOpen = false;
-// ご自身のGitHub PagesのURL
-const chatUrl = 'https://shin1222kurata.github.io/wa.kuratalab.net-sample01/ai-chat.html';
+// ベースとなるGitHub PagesのURL
+const baseUrl = 'https://shin1222kurata.github.io/wa.kuratalab.net-sample01/ai-chat.html';
 
-// 距離判定（1秒に1回チェック）
 setInterval(async () => {
     try {
         const players = await WA.room.getPlayers();
@@ -14,29 +12,28 @@ setInterval(async () => {
             const distanceX = Math.abs(myPos.x - bot.x);
             const distanceY = Math.abs(myPos.y - bot.y);
             
-            // 3マス以内に入った場合の処理
             if (distanceX <= 3 && distanceY <= 3) {
                 if (!isChatOpen) {
                     isChatOpen = true;
-                    // 最新のAPI仕様に合わせて、画面を開きつつ「名前取得の権限（true）」を付与します
-                    currentCoWebsite = await WA.nav.openCoWebSite(chatUrl, true);
+                    // 【大改良】メタバース側で名前を取得し、URLの末尾にくっつける
+                    let myName = '不明なユーザー';
+                    if (WA.player && WA.player.name) {
+                        myName = WA.player.name;
+                    }
+                    // URLを生成（例: .../ai-chat.html?name=sk）
+                    const chatUrl = baseUrl + "?name=" + encodeURIComponent(myName);
+                    
+                    // セキュリティに引っかからない、最も安全な方法で開く
+                    WA.nav.openCoWebSite(chatUrl);
                 }
             } else {
-                // 離れたら閉じる処理
                 if (isChatOpen) {
                     isChatOpen = false;
-                    // 最新のAPI仕様（オブジェクトから直接閉じる）で安全に画面を消去します
-                    if (currentCoWebsite && typeof currentCoWebsite.close === 'function') {
-                        currentCoWebsite.close();
-                        currentCoWebsite = null;
-                    } else if (typeof WA.nav.closeCoWebSite === 'function') {
-                        // 古いバージョンのWorkAdventure向けの保険
-                        WA.nav.closeCoWebSite();
-                    }
+                    WA.nav.closeCoWebSite();
                 }
             }
         }
     } catch (e) {
-        console.error("距離判定または画面開閉のエラー:", e);
+        console.error("エラー:", e);
     }
 }, 1000);
