@@ -1,5 +1,4 @@
 let isChatOpen = false;
-// ベースとなるGitHub PagesのURL
 const baseUrl = 'https://shin1222kurata.github.io/wa.kuratalab.net-sample01/ai-chat.html';
 
 setInterval(async () => {
@@ -15,15 +14,13 @@ setInterval(async () => {
             if (distanceX <= 3 && distanceY <= 3) {
                 if (!isChatOpen) {
                     isChatOpen = true;
-                    // 【大改良】メタバース側で名前を取得し、URLの末尾にくっつける
+                    
                     let myName = '不明なユーザー';
                     if (WA.player && WA.player.name) {
                         myName = WA.player.name;
                     }
-                    // URLを生成（例: .../ai-chat.html?name=sk）
-                    const chatUrl = baseUrl + "?name=" + encodeURIComponent(myName);
                     
-                    // セキュリティに引っかからない、最も安全な方法で開く
+                    const chatUrl = baseUrl + "?name=" + encodeURIComponent(myName);
                     WA.nav.openCoWebSite(chatUrl);
                 }
             } else {
