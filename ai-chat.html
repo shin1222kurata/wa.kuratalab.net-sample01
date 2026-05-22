@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI案内係</title>
+    <script src="https://play.workadventu.re/iframe_api.js"></script>
     <style>
         body { font-family: sans-serif; background-color: #f4f4f9; margin: 0; padding: 10px; display: flex; flex-direction: column; height: 100vh; box-sizing: border-box; }
         #chat-box { flex-grow: 1; background: white; border-radius: 8px; padding: 15px; overflow-y: auto; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 10px; display: flex; flex-direction: column; gap: 15px; }
@@ -29,9 +30,6 @@
     </div>
 
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        let myName = urlParams.get('name') || '不明なユーザー';
-
         async function sendMessage() {
             const inputField = document.getElementById('user-input');
             const message = inputField.value.trim();
@@ -45,16 +43,28 @@
             const loadingDiv = document.createElement('div');
             loadingDiv.className = 'message bot';
             loadingDiv.id = loadingId;
-            loadingDiv.innerHTML = '<div class="bubble">考え中...</div>';
+            loadingDiv.innerHTML = `<div class="bubble">考え中...</div>`;
             chatBox.appendChild(loadingDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
 
             try {
+                // 【追加】WorkAdventureからアバター名を引っ張り出す処理
+                let myName = '不明なユーザー';
+                try {
+                    if (typeof WA !== 'undefined' && WA.player && WA.player.name) {
+                        myName = WA.player.name;
+                    }
+                } catch (e) {
+                    console.warn("アバター名の取得にスキップしました");
+                }
+
+                // ★ご自身のドメインに書き換えてください
                 const apiUrl = 'https://wa.kuratalab.net/api/chat';
                 
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    // 【変更】メッセージと一緒に、取得したアバター名もサーバーへ送る
                     body: JSON.stringify({ message: message, playerName: myName })
                 });
 
@@ -66,7 +76,7 @@
                 appendMessage(data.reply, 'bot');
                 
             } catch (error) {
-                console.error(error);
+                console.error('通信エラー:', error);
                 document.getElementById(loadingId).remove();
                 appendMessage("サーバーとの通信に失敗しました。案内係は現在お休み中です。", 'bot');
             }
@@ -75,8 +85,8 @@
         function appendMessage(text, sender) {
             const chatBox = document.getElementById('chat-box');
             const msgDiv = document.createElement('div');
-            msgDiv.className = 'message ' + sender;
-            msgDiv.innerHTML = '<div class="bubble">' + text + '</div>';
+            msgDiv.className = `message ${sender}`;
+            msgDiv.innerHTML = `<div class="bubble">${text}</div>`;
             chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
         }

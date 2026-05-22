@@ -1,35 +1,45 @@
-let isChatOpen = false;
-const baseUrl = 'https://shin1222kurata.github.io/wa.kuratalab.net-sample01/ai-chat.html';
-
-console.log("=== 案内係スクリプト起動（動くBOT追従版） ===");
-
-// 1. 会話の輪（白い円）に誰かが入ってきたときの処理
-WA.player.proximityMeeting.onJoin().subscribe((players) => {
-    // 輪に入ってきたプレイヤーの中に「案内係」がいるかチェック
-    const bot = players.find(p => p.name === '案内係');
-    
-    if (bot && !isChatOpen) {
-        console.log("✅ 案内係が会話の輪に入りました！");
-        isChatOpen = true;
-        
-        let myName = '不明なユーザー';
-        if (WA.player && WA.player.name) {
-            myName = WA.player.name;
+WA.onInit().then(() => {
+    WA.ui.displayActionMessage({
+        message: "メタバース空間へようこそ！ここには案内係がいます。",
+        type: "message",
+        callback: () => {
+            console.log("メッセージが閉じられました");
         }
-        
-        const chatUrl = baseUrl + "?name=" + encodeURIComponent(myName);
-        WA.nav.openCoWebSite(chatUrl);
-    }
+    });
 });
 
-// 2. 会話の輪から出たときの処理
-WA.player.proximityMeeting.onLeave().subscribe((players) => {
-    // 輪から離れた（または自分が離れた）プレイヤーの中に案内係がいるかチェック
-    const botLeft = players.find(p => p.name === '案内係');
-    
-    if (botLeft && isChatOpen) {
-        console.log("🚪 案内係との会話の輪から出ました");
-        isChatOpen = false;
-        WA.nav.closeCoWebSite();
+let isChatOpen = false;
+// ご自身のGitHub PagesのURL
+const chatUrl = 'https://shin1222kurata.github.io/wa.kuratalab.net-sample01/ai-chat.html';
+
+// 方法1：距離判定（こちらの方が確実に特定の位置で発火します）
+setInterval(async () => {
+    try {
+        const players = await WA.room.getPlayers();
+        const bot = players.find(p => p.name === '案内係' || (p.state && p.state.isGuideBot));
+
+        if (bot) {
+            const myPos = await WA.player.getPosition();
+            const distanceX = Math.abs(myPos.x - bot.x);
+            const distanceY = Math.abs(myPos.y - bot.y);
+            
+            // 3マス以内に入ったらチャット画面を開く
+            if (distanceX <= 3 && distanceY <= 3) {
+                if (!isChatOpen) {
+                    isChatOpen = true;
+                    WA.nav.openCoWebSite(chatUrl);
+                }
+            } else {
+                // 離れたら閉じる
+                if (isChatOpen) {
+                    isChatOpen = false;
+                    WA.nav.closeCoWebSite();
+                }
+            }
+        }
+    } catch (e) {
+        console.error("プレイヤー情報の取得エラー", e);
     }
-});
+}, 1000);
+
+// ※ proximityMeetingのイベントは、距離判定(setInterval)と重複するため削除またはコメントアウト推奨
