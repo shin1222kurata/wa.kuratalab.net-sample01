@@ -1,18 +1,9 @@
-WA.onInit().then(() => {
-    WA.ui.displayActionMessage({
-        message: "メタバース空間へようこそ！ここには案内係がいます。",
-        type: "message",
-        callback: () => {
-            console.log("メッセージが閉じられました");
-        }
-    });
-});
-
+let currentCoWebsite = null;
 let isChatOpen = false;
 // ご自身のGitHub PagesのURL
 const chatUrl = 'https://shin1222kurata.github.io/wa.kuratalab.net-sample01/ai-chat.html';
 
-// 方法1：距離判定（こちらの方が確実に特定の位置で発火します）
+// 距離判定（1秒に1回チェック）
 setInterval(async () => {
     try {
         const players = await WA.room.getPlayers();
@@ -23,25 +14,29 @@ setInterval(async () => {
             const distanceX = Math.abs(myPos.x - bot.x);
             const distanceY = Math.abs(myPos.y - bot.y);
             
-            // 3マス以内に入ったらチャット画面を開く
+            // 3マス以内に入った場合の処理
             if (distanceX <= 3 && distanceY <= 3) {
                 if (!isChatOpen) {
                     isChatOpen = true;
-                    //WA.nav.openCoWebSite(chatUrl);
-                    // 第2引数の true が「Iframe API（名前の取得など）を許可する」という魔法の鍵です
-                    WA.nav.openCoWebSite(chatUrl, true);
+                    // 最新のAPI仕様に合わせて、画面を開きつつ「名前取得の権限（true）」を付与します
+                    currentCoWebsite = await WA.nav.openCoWebSite(chatUrl, true);
                 }
             } else {
-                // 離れたら閉じる
+                // 離れたら閉じる処理
                 if (isChatOpen) {
                     isChatOpen = false;
-                    WA.nav.closeCoWebSite();
+                    // 最新のAPI仕様（オブジェクトから直接閉じる）で安全に画面を消去します
+                    if (currentCoWebsite && typeof currentCoWebsite.close === 'function') {
+                        currentCoWebsite.close();
+                        currentCoWebsite = null;
+                    } else if (typeof WA.nav.closeCoWebSite === 'function') {
+                        // 古いバージョンのWorkAdventure向けの保険
+                        WA.nav.closeCoWebSite();
+                    }
                 }
             }
         }
     } catch (e) {
-        console.error("プレイヤー情報の取得エラー", e);
+        console.error("距離判定または画面開閉のエラー:", e);
     }
 }, 1000);
-
-// ※ proximityMeetingのイベントは、距離判定(setInterval)と重複するため削除またはコメントアウト推奨
